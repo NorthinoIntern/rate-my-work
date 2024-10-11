@@ -1,4 +1,4 @@
-#Rate My Work
+# Rate My Work
 
 Rate My Work is a project submission platform where users can upload their projects, view projects from other users, and rate them. The platform is built using PHP and MySQL, with features like user authentication, project uploads, and user profile management.
 #### Key Features
