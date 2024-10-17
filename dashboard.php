@@ -56,7 +56,7 @@ $conn->close();
                         <h3><?php echo htmlspecialchars($project['title']); ?></h3>
                         <p><?php echo htmlspecialchars($project['description']); ?></p>
                         <a href="<?php echo htmlspecialchars($project['file_path']); ?>" target="_blank">View Project</a>
-                        <p><a href="rate.php?project_id=<?php echo $project['id']; ?>">Rate this Project</a></p>
+                        <p><a href="rateing.php?project_id=<?php echo $project['id']; ?>">Rate this Project</a></p>
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>
