@@ -1,52 +1,62 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-?>
-
-<?php
-require_once 'db.php';
 session_start();
-$author = $_SESSION['username'];
+require_once 'db.php';
+
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
+    die('User is not logged in. User ID is missing.');
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $title = htmlspecialchars($_POST['title']);
-    $description = htmlspecialchars($_POST['description']);
-    $file_name = $_FILES['file']['name'];
-    $file_tmp = $_FILES['file']['tmp_name'];
+    $title = $_POST['title'];
+    $description = $_POST['description'];
 
-    // Specify the upload directory
-    $upload_dir = "uploads/";
-    $upload_path = $upload_dir . basename($file_name);
+    // Validate and sanitize user inputs
+    $title = filter_var($title, FILTER_SANITIZE_STRING);
+    $description = filter_var($description, FILTER_SANITIZE_STRING);
 
-    // Ensure the 'uploads' directory exists and is writable
-    if (!file_exists($upload_dir)) {
-        mkdir($upload_dir, 0755, true);
+    $upload_dir = 'uploads/';
+    $upload_path = $upload_dir . basename($_FILES['file']['name']);
+    $file_type = pathinfo($upload_path, PATHINFO_EXTENSION);
+
+    $allowed_types = ['jpg', 'png', 'jpeg', 'gif', 'pdf']; // Allowed file types
+    $user_id = $_SESSION['user_id']; // Get user_id from session
+
+    // Retrieve the author's name (username) from the users table
+    $stmt = $conn->prepare("SELECT username FROM users WHERE id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $stmt->bind_result($author);
+    $stmt->fetch();
+    $stmt->close();
+
+    // Check if file type is allowed
+    if (!in_array(strtolower($file_type), $allowed_types)) {
+        echo "Error: Only JPG, JPEG, PNG, GIF, and PDF files are allowed.";
+        exit;
     }
 
-    if (move_uploaded_file($file_tmp, $upload_path)) {
-        // Save project details to database
-        $stmt = $conn->prepare("INSERT INTO projects (user_id, title, description, file_path) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("isss", $user_id, $title, $description, $upload_path);
-    
+    // Check if the file was uploaded correctly
+    if (move_uploaded_file($_FILES['file']['tmp_name'], $upload_path)) {
+        // Prepare and execute the SQL statement, including the 'author' field
+        $stmt = $conn->prepare("INSERT INTO projects (user_id, title, description, file_path, author) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("issss", $user_id, $title, $description, $upload_path, $author);
+
         if ($stmt->execute()) {
             echo "Project uploaded successfully!";
         } else {
             echo "Error: " . $stmt->error;
         }
-
-        $stmt->close();
     } else {
-        echo "Failed to upload file.";
+        echo "File upload failed.";
     }
 
-    $conn->close();
+    $stmt->close();
 }
+
+$conn->close();
 ?>
+
+
 
 
 <!DOCTYPE html>
