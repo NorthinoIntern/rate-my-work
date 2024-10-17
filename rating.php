@@ -1,81 +1,56 @@
+<?php
+session_start();
+require_once 'db.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $project_id = $_POST['project_id'];
+    $rating_value = $_POST['rating_value'];
+    $user_id = $_SESSION['user_id'];  // Assuming user login is implemented
+
+    // Insert the rating into the database
+    $stmt = $conn->prepare("INSERT INTO ratings (project_id, user_id, rating_value) VALUES (?, ?, ?)");
+    $stmt->bind_param("iii", $project_id, $user_id, $rating_value);
+    $stmt->execute();
+    $stmt->close();
+
+    // Redirect back to the home page (or any other page like index.php)
+    header("Location: index.php");
+    exit();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Rating System</title>
+    <title>Rate the Work</title>
 </head>
 <body>
     <h1>Rate the Work</h1>
-    <div class="star-rating">
-        <span class="star" data-value="20%">&#9733;</span>
-        <span class="star" data-value="40%">&#9733;</span>
-        <span class="star" data-value="60%">&#9733;</span>
-        <span class="star" data-value="80%">&#9733;</span>
-        <span class="star" data-value="100%">&#9733;</span>
-    </div>
-    <p id="rating-value">Your rating: 0</p>
-    <pre>
 
+    <form method="POST" action="rating.php">
+        <input type="hidden" name="project_id" value="<?php echo $_GET['project_id']; ?>">
+        <div class="star-rating">
+            <input type="radio" name="rating_value" value="20" id="star1" required><label for="star1">&#9733;</label>
+            <input type="radio" name="rating_value" value="40" id="star2"><label for="star2">&#9733;</label>
+            <input type="radio" name="rating_value" value="60" id="star3"><label for="star3">&#9733;</label>
+            <input type="radio" name="rating_value" value="80" id="star4"><label for="star4">&#9733;</label>
+            <input type="radio" name="rating_value" value="100" id="star5"><label for="star5">&#9733;</label>
+        </div>
+        <button type="submit">Submit Rating</button>
+    </form>
 
-    </pre>
-    <div class="review-section">
-        <h3>Write a Review</h3>
-        <textarea placeholder="Write your review here..."></textarea>
-        <input type="submit" style="text-align: right;">
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                text-align: center;
-                padding: 50px;
-            }
-    
-            .star-rating {
-                display: inline-block;
-                font-size: 40px;
-                color: #ccc;
-                cursor: pointer;
-            }
-    
-            .star-rating .star:hover,
-            .star-rating .star.selected {
-                color:  #c36217;
-            }
-            .review-section {
-                margin-top: 20px;
-            }
-            .review-section textarea {
-                margin: 0 10px;
-                width: 50%;
-                padding: 10px;
-                border: 1px solid #ccc;
-                border-radius: 5px;
-                resize: vertical;
-                min-height: 100px;   
-            }
-            h1{
-                text-align: left;
-                color: #c36217;
-            }
-        </style>
-<!-----------------js------------------------------>
-    <script>
-        const stars = document.querySelectorAll('.star');
-        const ratingValue = document.getElementById('rating-value');
-        let selectedRating = 0;
-
-        stars.forEach(star => {
-            star.addEventListener('click', function() {
-                selectedRating = this.getAttribute('data-value');
-                ratingValue.textContent = `Your rating: ${selectedRating}`;
-
-                // Reset all stars and highlight up to the selected one
-                stars.forEach(s => s.classList.remove('selected'));
-                for (let i = 0; i < selectedRating; i++) {
-                    stars[i].classList.add('selected');
-                }
-            });
-        });
-    </script>
+    <style>
+        .star-rating label {
+            font-size: 40px;
+            color: #ccc;
+            cursor: pointer;
+        }
+        .star-rating input:checked ~ label,
+        .star-rating input:hover ~ label {
+            color: #c36217;
+        }
+    </style>
 </body>
 </html>

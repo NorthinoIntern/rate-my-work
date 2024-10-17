@@ -1,6 +1,8 @@
 <?php
 require_once 'db.php';
 session_start();
+// In your login.php (after successful login)
+$_SESSION['username'] = $username; // Store the username in session
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = htmlspecialchars($_POST['email']);
